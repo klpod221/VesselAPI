@@ -2,12 +2,14 @@
 // export * from './stores/request.store'; // does not exist
 // export * from './stores/collection.store'; // does not exist
 
+// App - Shared application component
+export * from './App';
+
 // Components
 export * from './components/Button';
 export * from './components/CodeEditor';
 export * from './components/RequestPanel';
 export * from './components/ResponsePanel';
-// export * from './components/GlassPanel'; // Removed
 export * from './components/Input';
 export * from './components/Select';
 export * from './components/Textarea';
