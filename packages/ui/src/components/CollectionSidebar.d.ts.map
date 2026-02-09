@@ -1,0 +1,1 @@
+{"version":3,"file":"CollectionSidebar.d.ts","sourceRoot":"","sources":["CollectionSidebar.tsx"],"names":[],"mappings":"AAeA,OAAO,EAIL,KAAK,UAAU,EAChB,MAAM,cAAc,CAAC;AAOtB,UAAU,sBAAsB;IAC9B,QAAQ,CAAC,SAAS,CAAC,EAAE,MAAM,CAAC;IAC5B,QAAQ,CAAC,eAAe,CAAC,EAAE,CAAC,OAAO,EAAE,UAAU,KAAK,IAAI,CAAC;CAC1D;AAmBD;;;GAGG;AACH,wBAAgB,iBAAiB,CAAC,EAAE,SAAS,EAAE,eAAe,EAAE,EAAE,sBAAsB,2CAsTvF"}

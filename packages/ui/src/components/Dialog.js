@@ -1,0 +1,51 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import * as React from "react";
+import { X } from "lucide-react";
+import { cn } from "../lib/utils";
+import { Portal } from "./Portal";
+const DialogContext = React.createContext(null);
+const Dialog = ({ open, onOpenChange, children }) => {
+    const [localOpen, setLocalOpen] = React.useState(false);
+    const isControlled = open !== undefined;
+    const isOpen = isControlled ? open : localOpen;
+    const setIsOpen = isControlled ? onOpenChange : setLocalOpen;
+    const contextValue = React.useMemo(() => ({
+        open: !!isOpen,
+        onOpenChange: setIsOpen
+    }), [isOpen, setIsOpen]);
+    return (_jsx(DialogContext.Provider, { value: contextValue, children: children }));
+};
+Dialog.displayName = "Dialog";
+const DialogTrigger = React.forwardRef(({ className, onClick, ...props }, ref) => {
+    const context = React.useContext(DialogContext);
+    return (_jsx("button", { ref: ref, type: "button", onClick: (e) => {
+            onClick?.(e);
+            context?.onOpenChange(true);
+        }, className: className, ...props }));
+});
+DialogTrigger.displayName = "DialogTrigger";
+const DialogContent = React.forwardRef(({ className, children, ...props }, ref) => {
+    const context = React.useContext(DialogContext);
+    if (!context?.open)
+        return null;
+    return (_jsx(Portal, { children: _jsxs("div", { className: "fixed inset-0 z-50 flex items-center justify-center", children: [_jsx("div", { "data-state": context.open ? "open" : "closed", className: cn("fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0", className), onClick: () => {
+                        if (context?.onOpenChange)
+                            context.onOpenChange(false);
+                    }, role: "button", tabIndex: -1, onKeyDown: (e) => {
+                        if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+                            if (context?.onOpenChange)
+                                context.onOpenChange(false);
+                        }
+                    } }), "     ", _jsxs("div", { ref: ref, className: cn("relative z-50 grid w-full max-w-lg gap-4 p-6 shadow-2xl duration-200 sm:rounded-lg bg-background border border-border animate-in fade-in-0 zoom-in-95", className), ...props, children: [children, _jsxs("button", { type: "button", onClick: () => context.onOpenChange(false), className: "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none bg-secondary/50 p-1", children: [_jsx(X, { className: "h-4 w-4" }), _jsx("span", { className: "sr-only", children: "Close" })] })] })] }) }));
+});
+DialogContent.displayName = "DialogContent";
+const DialogHeader = ({ className, ...props }) => (_jsx("div", { className: cn("flex flex-col space-y-1.5 text-center sm:text-left", className), ...props }));
+DialogHeader.displayName = "DialogHeader";
+const DialogFooter = ({ className, ...props }) => (_jsx("div", { className: cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className), ...props }));
+DialogFooter.displayName = "DialogFooter";
+const DialogTitle = React.forwardRef(({ className, ...props }, ref) => (_jsx("h2", { ref: ref, className: cn("text-lg font-semibold leading-none tracking-tight", className), ...props })));
+DialogTitle.displayName = "DialogTitle";
+const DialogDescription = React.forwardRef(({ className, ...props }, ref) => (_jsx("p", { ref: ref, className: cn("text-sm text-muted-foreground", className), ...props })));
+DialogDescription.displayName = "DialogDescription";
+export { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription, };
+//# sourceMappingURL=Dialog.js.map

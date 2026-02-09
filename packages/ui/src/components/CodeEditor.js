@@ -2,25 +2,53 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 import { json } from '@codemirror/lang-json';
 import CodeMirror from '@uiw/react-codemirror';
+import { createTheme } from '@uiw/codemirror-themes';
+import { tags as t } from '@lezer/highlight';
 import { cn } from '../lib/utils';
+const neonTheme = createTheme({
+    theme: 'dark',
+    settings: {
+        background: '#161616',
+        foreground: '#E4E4E7',
+        caret: '#39FF14',
+        selection: '#39FF1433',
+        selectionMatch: '#39FF1433',
+        lineHighlight: '#27272A',
+        gutterBackground: '#161616',
+        gutterForeground: '#71717A',
+    },
+    styles: [
+        { tag: t.keyword, color: '#FF79C6', fontWeight: 'bold' },
+        { tag: [t.name, t.deleted, t.character, t.propertyName, t.macroName], color: '#E4E4E7' },
+        { tag: [t.processingInstruction, t.string, t.inserted, t.special(t.string)], color: '#F1FA8C' },
+        { tag: [t.function(t.variableName), t.labelName], color: '#39FF14' },
+        { tag: [t.color, t.constant(t.name), t.standard(t.name)], color: '#BD93F9' },
+        { tag: [t.definition(t.name), t.separator], color: '#E4E4E7' },
+        { tag: [t.className], color: '#39FF14' },
+        { tag: [t.number, t.changed, t.annotation, t.modifier, t.self, t.namespace], color: '#BD93F9' },
+        { tag: [t.typeName], color: '#39FF14' },
+        { tag: [t.operator, t.operatorKeyword], color: '#FF79C6' },
+        { tag: [t.url, t.escape, t.regexp, t.link], color: '#F1FA8C' },
+        { tag: [t.meta, t.comment], color: '#6272A4' },
+        { tag: t.strong, fontWeight: 'bold' },
+        { tag: t.emphasis, fontStyle: 'italic' },
+        { tag: t.link, textDecoration: 'underline' },
+        { tag: t.heading, fontWeight: 'bold', color: '#BD93F9' },
+        { tag: [t.atom, t.bool, t.special(t.variableName)], color: '#BD93F9' },
+    ],
+});
 /**
  * CodeMirror-based code editor with JSON syntax highlighting.
+ * This component MUST be placed inside a container with explicit height (e.g., h-64, h-full with parent constraints).
  */
-export function CodeEditor({ value, onChange, language = 'json', readOnly = false, placeholder, className, minHeight = '200px', maxHeight = '400px', }) {
+export function CodeEditor({ value, onChange, language = 'json', readOnly = false, placeholder, className, }) {
     const extensions = language === 'json' ? [json()] : [];
-    const handleChange = (val) => {
-        onChange?.(val);
-    };
-    return (_jsx("div", { className: cn('overflow-hidden rounded-md border border-border', className), children: _jsx(CodeMirror, { value: value, onChange: handleChange, extensions: extensions, readOnly: readOnly, placeholder: placeholder, basicSetup: {
+    return (_jsx("div", { className: cn('w-full h-full overflow-auto bg-card rounded-[4px] border border-border', className), children: _jsx(CodeMirror, { value: value, onChange: onChange, extensions: extensions, readOnly: readOnly, placeholder: placeholder, basicSetup: {
                 lineNumbers: true,
                 foldGutter: true,
                 highlightActiveLine: !readOnly,
                 highlightSelectionMatches: true,
                 autocompletion: !readOnly,
-            }, style: {
-                minHeight,
-                maxHeight,
-                overflow: 'auto',
-            }, theme: "dark" }) }));
+            }, theme: neonTheme, className: "h-full [&_.cm-editor]:h-full [&_.cm-scroller]:overflow-auto" }) }));
 }
 //# sourceMappingURL=CodeEditor.js.map

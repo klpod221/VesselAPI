@@ -162,6 +162,34 @@ export const useCollectionStore = create()(persist((set, get) => ({
     },
 }), {
     name: 'vessel-collections',
-    storage: createJSONStorage(() => localStorage),
+    storage: createJSONStorage(() => ({
+        getItem: async (name) => {
+            try {
+                const { getSQLiteStorage } = await import('./sqlite-storage');
+                return await getSQLiteStorage().getItem(name);
+            }
+            catch {
+                return localStorage.getItem(name);
+            }
+        },
+        setItem: async (name, value) => {
+            try {
+                const { getSQLiteStorage } = await import('./sqlite-storage');
+                await getSQLiteStorage().setItem(name, value);
+            }
+            catch {
+                localStorage.setItem(name, value);
+            }
+        },
+        removeItem: async (name) => {
+            try {
+                const { getSQLiteStorage } = await import('./sqlite-storage');
+                await getSQLiteStorage().removeItem(name);
+            }
+            catch {
+                localStorage.removeItem(name);
+            }
+        },
+    })),
 }));
 //# sourceMappingURL=collection.store.js.map

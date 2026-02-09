@@ -5,11 +5,10 @@ export interface CodeEditorProps {
     readonly readOnly?: boolean;
     readonly placeholder?: string;
     readonly className?: string;
-    readonly minHeight?: string;
-    readonly maxHeight?: string;
 }
 /**
  * CodeMirror-based code editor with JSON syntax highlighting.
+ * This component MUST be placed inside a container with explicit height (e.g., h-64, h-full with parent constraints).
  */
-export declare function CodeEditor({ value, onChange, language, readOnly, placeholder, className, minHeight, maxHeight, }: CodeEditorProps): import("react/jsx-runtime").JSX.Element;
+export declare function CodeEditor({ value, onChange, language, readOnly, placeholder, className, }: CodeEditorProps): import("react/jsx-runtime").JSX.Element;
 //# sourceMappingURL=CodeEditor.d.ts.map

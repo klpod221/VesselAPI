@@ -8,6 +8,7 @@ export * from './App';
 // Components
 export * from './components/Button';
 export * from './components/CodeEditor';
+export * from './components/CollectionSidebar';
 export * from './components/RequestPanel';
 export * from './components/ResponsePanel';
 export * from './components/Input';

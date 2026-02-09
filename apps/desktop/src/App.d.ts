@@ -1,3 +1,3 @@
-declare function App(): import("react/jsx-runtime").JSX.Element;
-export default App;
+declare function DesktopApp(): import("react/jsx-runtime").JSX.Element;
+export default DesktopApp;
 //# sourceMappingURL=App.d.ts.map

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { createNetworkClient, type NetworkClient } from '@vessel/network';
-import { useRequestStore } from '@vessel/core';
+import { useRequestStore, type ApiRequest } from '@vessel/core';
+import { CollectionSidebar } from './components/CollectionSidebar';
 import { RequestPanel } from './components/RequestPanel';
 import { ResponsePanel } from './components/ResponsePanel';
 
@@ -13,15 +14,15 @@ export interface AppProps {
   readonly title?: string;
 }
 
-const DEFAULT_REQUEST = {
+const DEFAULT_REQUEST: ApiRequest = {
   id: 'default',
   name: 'New Request',
-  method: 'GET' as const,
+  method: 'GET',
   url: 'https://jsonplaceholder.typicode.com/todos/1',
   headers: [],
   queryParams: [],
-  body: { type: 'none' as const, content: '' },
-  auth: { type: 'none' as const },
+  body: { type: 'none', content: '' },
+  auth: { type: 'none' },
   createdAt: Date.now(),
   updatedAt: Date.now(),
 };
@@ -47,6 +48,10 @@ export function App({ platform, title = 'Vessel API' }: AppProps) {
     init();
   }, [platform, title, setActiveRequest, setStoreClient]);
 
+  const handleRequestSelect = (request: ApiRequest) => {
+    setActiveRequest(request);
+  };
+
   return (
     <div className="h-screen w-screen flex flex-col bg-background text-foreground overflow-hidden">
       {/* Header */}
@@ -70,8 +75,13 @@ export function App({ platform, title = 'Vessel API' }: AppProps) {
         </span>
       </header>
 
-      {/* Main Content */}
+      {/* Main Content - 3-column layout */}
       <div className="flex-1 flex overflow-hidden">
+        {/* Collection Sidebar */}
+        <CollectionSidebar
+          className="w-64 shrink-0"
+          onRequestSelect={handleRequestSelect}
+        />
         {/* Request Panel */}
         <div className="flex-1 border-r border-border min-w-[300px]">
           <RequestPanel />
@@ -84,3 +94,4 @@ export function App({ platform, title = 'Vessel API' }: AppProps) {
     </div>
   );
 }
+
