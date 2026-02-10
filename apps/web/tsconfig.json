@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@vessel/*": ["../../packages/*/src/index.ts"]
+    },
+    "composite": true,
+    "jsx": "react-jsx"
+  },
+  "include": ["src/**/*", "../../packages/*/src/**/*"]
+}
