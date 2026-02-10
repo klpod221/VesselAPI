@@ -1,9 +1,8 @@
 // Stores
-// export * from './stores/request.store'; // does not exist
-// export * from './stores/collection.store'; // does not exist
 
 // App - Shared application component
 export * from "./App";
+export * from "./components/Logo";
 
 // Components
 export * from "./components/Button";

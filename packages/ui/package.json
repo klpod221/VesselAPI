@@ -13,8 +13,8 @@
         "./styles.css": "./dist/styles.css"
     },
     "scripts": {
-        "build": "tsup src/index.ts --format esm --external react && tsc --emitDeclarationOnly --declaration",
-        "dev": "tsup src/index.ts --format esm --watch --external react & tsc --emitDeclarationOnly --declaration --watch",
+        "build": "tsup && tsc --emitDeclarationOnly --declaration",
+        "dev": "tsup --watch & tsc --emitDeclarationOnly --declaration --watch",
         "clean": "rm -rf dist"
     },
     "peerDependencies": {

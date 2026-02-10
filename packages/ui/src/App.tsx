@@ -7,6 +7,7 @@ import { CollectionSidebar } from './components/CollectionSidebar';
 import { RequestPanel } from './components/RequestPanel';
 import { ResponsePanel } from './components/ResponsePanel';
 import { SettingsDialog } from './components/SettingsDialog';
+import { Logo } from './components/Logo';
 
 export interface AppProps {
   /** Platform determines which network client to use */
@@ -70,9 +71,8 @@ export function App({ platform, title = 'Vessel API' }: AppProps) {
       <header className="h-12 shrink-0 border-b border-border flex items-center px-4 justify-between bg-card select-none app-region-drag">
         <div className="flex items-center gap-2">
           {/* Logo */}
-          <div className="h-6 w-6 rounded bg-primary flex items-center justify-center">
-            <span className="font-bold text-primary-foreground text-xs">V</span>
-          </div>
+          <Logo className="h-8 w-8 rounded" />
+
           <span className="font-bold">{title}</span>
           {/* Client Mode Badge */}
           {client && (

@@ -1,15 +1,17 @@
-import * as esbuild from 'esbuild';
-import fs from 'node:fs';
-import path from 'node:path';
+import * as esbuild from "esbuild";
+import fs from "node:fs";
+import path from "node:path";
 
 const args = process.argv.slice(2);
-const watch = args.includes('--watch');
-const target = args.includes('--target') ? args[args.indexOf('--target') + 1] : 'all';
+const watch = args.includes("--watch");
+const target = args.includes("--target")
+  ? args[args.indexOf("--target") + 1]
+  : "all";
 
-async function buildExtension(browser: 'chrome' | 'firefox') {
+async function buildExtension(browser: "chrome" | "firefox") {
   const outDir = `dist-${browser}`;
   const manifestSrc = `manifests/${browser}.json`;
-  
+
   console.log(`[${browser}] Building...`);
 
   // Ensure dist dir exists
@@ -18,30 +20,33 @@ async function buildExtension(browser: 'chrome' | 'firefox') {
   }
 
   // Copy manifest
-  fs.copyFileSync(manifestSrc, path.join(outDir, 'manifest.json'));
+  fs.copyFileSync(manifestSrc, path.join(outDir, "manifest.json"));
+
+  // Copy icons
+  fs.cpSync("icons", path.join(outDir, "icons"), { recursive: true });
 
   const commonOptions: esbuild.BuildOptions = {
     bundle: true,
     minify: !watch,
     sourcemap: watch,
-    format: 'iife', // Browser extensions run in isolated scope
-    target: ['es2020'],
-    logLevel: 'info',
+    format: "iife", // Browser extensions run in isolated scope
+    target: ["es2020"],
+    logLevel: "info",
   };
 
   try {
     // Build background script
     const bgCtx = await esbuild.context({
       ...commonOptions,
-      entryPoints: ['src/background/service-worker.ts'],
-      outfile: path.join(outDir, 'background.js'),
+      entryPoints: ["src/background/service-worker.ts"],
+      outfile: path.join(outDir, "background.js"),
     });
 
     // Build content script
     const contentCtx = await esbuild.context({
       ...commonOptions,
-      entryPoints: ['src/content/bridge.ts'],
-      outfile: path.join(outDir, 'content.js'),
+      entryPoints: ["src/content/bridge.ts"],
+      outfile: path.join(outDir, "content.js"),
     });
 
     if (watch) {
@@ -62,11 +67,11 @@ async function buildExtension(browser: 'chrome' | 'firefox') {
 }
 
 async function main() {
-  if (target === 'all' || target === 'chrome') {
-    await buildExtension('chrome');
+  if (target === "all" || target === "chrome") {
+    await buildExtension("chrome");
   }
-  if (target === 'all' || target === 'firefox') {
-    await buildExtension('firefox');
+  if (target === "all" || target === "firefox") {
+    await buildExtension("firefox");
   }
 }
 
