@@ -6,6 +6,12 @@
   "scripts": {
     "dev:desktop": "pnpm --filter @vessel/desktop tauri dev",
     "dev:web": "pnpm --filter @vessel/web dev",
+    "dev:extension": "pnpm --filter @vessel/extension dev",
+    "dev:ui": "pnpm --filter @vessel/ui dev",
+    "dev:core": "pnpm --filter @vessel/core dev",
+    "dev:network": "pnpm --filter @vessel/network dev",
+    "dev:storage": "pnpm --filter @vessel/storage dev",
+    "dev:all": "pnpm --filter @vessel/desktop tauri dev & pnpm --filter @vessel/web dev & pnpm --filter @vessel/extension dev & pnpm --filter @vessel/ui dev & pnpm --filter @vessel/core dev & pnpm --filter @vessel/network dev & pnpm --filter @vessel/storage dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "clean": "turbo run clean && rm -rf node_modules"

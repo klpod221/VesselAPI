@@ -1,5 +1,5 @@
 import type { StateStorage } from 'zustand/middleware';
-import { SQLiteAdapter } from '@vessel/storage';
+import { SQLiteAdapter, TauriSQLiteAdapter, type StorageAdapter } from '@vessel/storage';
 import type { Collection } from '../types/request';
 
 // --- Shared Singleton Adapter ---
@@ -7,21 +7,37 @@ import type { Collection } from '../types/request';
 // Otherwise each maintains a separate in-memory SQLite database,
 // and whichever saves last to IndexedDB overwrites the other's data.
 
-let sharedAdapter: SQLiteAdapter | null = null;
+let sharedAdapter: StorageAdapter | null = null;
 let adapterInitialized = false;
 let adapterInitPromise: Promise<void> | null = null;
 
-function getSharedAdapter(): SQLiteAdapter {
-  sharedAdapter ??= new SQLiteAdapter();
-  return sharedAdapter;
-}
 
-async function ensureAdapterInit(): Promise<SQLiteAdapter> { // NOSONAR — singleton pattern intentionally returns same instance
-  const adapter = getSharedAdapter();
-  if (adapterInitialized) return adapter;
-  adapterInitPromise ??= adapter.init().then(() => { adapterInitialized = true; });
+
+async function ensureAdapterInit(): Promise<StorageAdapter> { // NOSONAR — singleton pattern
+  if (sharedAdapter && adapterInitialized) return sharedAdapter;
+
+  adapterInitPromise ??= (async () => {
+    // 1. Try Tauri Adapter
+    const tauriAdapter = new TauriSQLiteAdapter();
+    if (await tauriAdapter.isAvailable()) {
+      console.log('[SQLiteStorage] Using Tauri SQLite Adapter');
+      await tauriAdapter.init();
+      sharedAdapter = tauriAdapter;
+      adapterInitialized = true;
+      return;
+    }
+
+    // 2. Fallback to Web Adapter (sql.js)
+    console.log('[SQLiteStorage] Using Web SQLite Adapter (sql.js)');
+    const webAdapter = new SQLiteAdapter();
+    await webAdapter.init();
+    sharedAdapter = webAdapter;
+    adapterInitialized = true;
+  })();
+
   await adapterInitPromise;
-  return adapter;
+  if (!sharedAdapter) throw new Error('Failed to initialize storage adapter');
+  return sharedAdapter;
 }
 
 // --- Collection Storage (structured table) ---

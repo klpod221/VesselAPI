@@ -37,13 +37,11 @@ export function App({ platform, title = 'Vessel API' }: AppProps) {
 
   useEffect(() => {
     async function init() {
-      // Use platform-specific client initialization
       const clientType = platform === 'tauri' ? 'tauri' : 'auto';
       const networkClient = await createNetworkClient(clientType);
       setClient(networkClient);
       setStoreClient(networkClient);
       setActiveRequest(DEFAULT_REQUEST);
-      console.log(`${title} initialized with ${networkClient.name} client`);
     }
     init();
   }, [platform, title, setActiveRequest, setStoreClient]);

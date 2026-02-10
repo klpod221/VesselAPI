@@ -1,4 +1,4 @@
-import { SQLiteAdapter } from '@vessel/storage';
+import { SQLiteAdapter, TauriSQLiteAdapter } from '@vessel/storage';
 // --- Shared Singleton Adapter ---
 // Both collection and KV storage MUST share the same adapter instance.
 // Otherwise each maintains a separate in-memory SQLite database,
@@ -6,17 +6,30 @@ import { SQLiteAdapter } from '@vessel/storage';
 let sharedAdapter = null;
 let adapterInitialized = false;
 let adapterInitPromise = null;
-function getSharedAdapter() {
-    sharedAdapter ??= new SQLiteAdapter();
-    return sharedAdapter;
-}
 async function ensureAdapterInit() {
-    const adapter = getSharedAdapter();
-    if (adapterInitialized)
-        return adapter;
-    adapterInitPromise ??= adapter.init().then(() => { adapterInitialized = true; });
+    if (sharedAdapter && adapterInitialized)
+        return sharedAdapter;
+    adapterInitPromise ??= (async () => {
+        // 1. Try Tauri Adapter
+        const tauriAdapter = new TauriSQLiteAdapter();
+        if (await tauriAdapter.isAvailable()) {
+            console.log('[SQLiteStorage] Using Tauri SQLite Adapter');
+            await tauriAdapter.init();
+            sharedAdapter = tauriAdapter;
+            adapterInitialized = true;
+            return;
+        }
+        // 2. Fallback to Web Adapter (sql.js)
+        console.log('[SQLiteStorage] Using Web SQLite Adapter (sql.js)');
+        const webAdapter = new SQLiteAdapter();
+        await webAdapter.init();
+        sharedAdapter = webAdapter;
+        adapterInitialized = true;
+    })();
     await adapterInitPromise;
-    return adapter;
+    if (!sharedAdapter)
+        throw new Error('Failed to initialize storage adapter');
+    return sharedAdapter;
 }
 // --- Collection Storage (structured table) ---
 /**

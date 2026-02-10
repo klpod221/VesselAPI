@@ -47,6 +47,11 @@ export interface StorageAdapter {
 
   // Cleanup
   close(): Promise<void>;
+
+  // Key-Value Store
+  getKV(key: string): Promise<string | null>;
+  setKV(key: string, value: string): Promise<void>;
+  deleteKV(key: string): Promise<void>;
 }
 
 /**

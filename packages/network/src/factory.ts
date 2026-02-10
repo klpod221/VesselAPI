@@ -35,7 +35,6 @@ export async function createNetworkClient(
   for (const mode of priority) {
     const client = clientFactories[mode]();
     if (await client.isAvailable()) {
-      console.info(`[Vessel] Using "${mode}" network client`);
       return client;
     }
   }

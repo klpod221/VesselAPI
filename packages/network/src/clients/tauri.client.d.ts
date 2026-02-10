@@ -1,4 +1,4 @@
-import type { NetworkClient, RequestConfig, NetworkResult, ClientCapabilities } from '../types';
+import type { NetworkClient, RequestConfig, NetworkResult, ClientCapabilities } from "../types";
 declare global {
     interface Window {
         __TAURI__?: unknown;

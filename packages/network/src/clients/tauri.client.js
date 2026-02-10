@@ -5,27 +5,27 @@
  * Only available when running inside a Tauri application.
  */
 export class TauriNetworkClient {
-    name = 'tauri';
+    name = "tauri";
     capabilities = {
         bypassCors: true,
         accessLocalhost: true,
         supportsStreaming: false,
     };
     async isAvailable() {
-        return globalThis.window !== undefined && '__TAURI__' in globalThis.window;
+        return globalThis.window !== undefined && "__TAURI__" in globalThis.window;
     }
     async execute(config) {
         try {
             // Dynamic import to avoid bundling Tauri in web builds
-            const { invoke } = await import('@tauri-apps/api/core');
-            const response = await invoke('execute_request', {
+            const { invoke } = await import("@tauri-apps/api/core");
+            const response = await invoke("execute_request", {
                 config: {
                     url: config.url,
                     method: config.method,
                     headers: config.headers ?? {},
                     body: config.body ?? null,
                     timeout: config.timeout ?? 30000,
-                    followRedirects: config.followRedirects ?? true,
+                    follow_redirects: config.followRedirects ?? true,
                 },
             });
             return { ok: true, response };
@@ -34,7 +34,7 @@ export class TauriNetworkClient {
             return {
                 ok: false,
                 error: {
-                    type: 'network',
+                    type: "network",
                     message: err instanceof Error ? err.message : String(err),
                     originalError: err,
                 },

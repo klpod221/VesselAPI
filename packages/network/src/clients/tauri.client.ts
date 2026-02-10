@@ -4,7 +4,7 @@ import type {
   NetworkResult,
   ResponseData,
   ClientCapabilities,
-} from '../types';
+} from "../types";
 
 declare global {
   interface Window {
@@ -19,7 +19,7 @@ declare global {
  * Only available when running inside a Tauri application.
  */
 export class TauriNetworkClient implements NetworkClient {
-  readonly name = 'tauri';
+  readonly name = "tauri";
   readonly capabilities: ClientCapabilities = {
     bypassCors: true,
     accessLocalhost: true,
@@ -27,22 +27,22 @@ export class TauriNetworkClient implements NetworkClient {
   };
 
   async isAvailable(): Promise<boolean> {
-    return globalThis.window !== undefined && '__TAURI__' in globalThis.window;
+    return globalThis.window !== undefined && "__TAURI__" in globalThis.window;
   }
 
   async execute(config: RequestConfig): Promise<NetworkResult> {
     try {
       // Dynamic import to avoid bundling Tauri in web builds
-      const { invoke } = await import('@tauri-apps/api/core');
+      const { invoke } = await import("@tauri-apps/api/core");
 
-      const response = await invoke<ResponseData>('execute_request', {
+      const response = await invoke<ResponseData>("execute_request", {
         config: {
           url: config.url,
           method: config.method,
           headers: config.headers ?? {},
           body: config.body ?? null,
           timeout: config.timeout ?? 30000,
-          followRedirects: config.followRedirects ?? true,
+          follow_redirects: config.followRedirects ?? true,
         },
       });
 
@@ -51,7 +51,7 @@ export class TauriNetworkClient implements NetworkClient {
       return {
         ok: false,
         error: {
-          type: 'network',
+          type: "network",
           message: err instanceof Error ? err.message : String(err),
           originalError: err,
         },
