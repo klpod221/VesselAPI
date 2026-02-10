@@ -1,5 +1,0 @@
-@import "tailwindcss";
-@import "../../../packages/ui/src/globals.css";
-
-/* Scan shared UI package for class usage to generate utilities */
-@source "../../../packages/ui/dist/**/*.js";
