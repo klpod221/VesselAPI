@@ -27,7 +27,11 @@ export class TauriNetworkClient implements NetworkClient {
   };
 
   async isAvailable(): Promise<boolean> {
-    return globalThis.window !== undefined && "__TAURI__" in globalThis.window;
+    return (
+      globalThis.window !== undefined &&
+      ("__TAURI__" in globalThis.window ||
+        "__TAURI_INTERNALS__" in globalThis.window)
+    );
   }
 
   async execute(config: RequestConfig): Promise<NetworkResult> {
