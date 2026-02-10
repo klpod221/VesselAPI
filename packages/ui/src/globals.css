@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@import "./theme.css";
+
+@layer base {
+  body {
+    @apply min-h-screen bg-background bg-fixed text-foreground selection:bg-primary/30 selection:text-black antialiased;
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
+  }
+}
