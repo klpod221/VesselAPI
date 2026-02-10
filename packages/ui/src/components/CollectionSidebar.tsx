@@ -465,7 +465,7 @@ function TreeItem({
           <div
             role="menu"
             tabIndex={-1}
-            className="absolute right-0 top-full mt-1 z-50 bg-popover border border-border rounded-md shadow-lg py-1 min-w-[140px]"
+            className="absolute right-0 top-full mt-1 z-50 bg-popover border border-border rounded-md py-1 min-w-[140px]"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.key === 'Escape' && onToggleMenu(e as unknown as React.MouseEvent)}
           >
@@ -568,7 +568,7 @@ function RequestItem({
         <div
           role="menu"
           tabIndex={-1}
-          className="absolute right-0 top-full mt-1 z-50 bg-popover border border-border rounded-md shadow-lg py-1 min-w-[120px]"
+          className="absolute right-0 top-full mt-1 z-50 bg-popover border border-border rounded-md py-1 min-w-[120px]"
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => e.key === 'Escape' && onToggleMenu(e as unknown as React.MouseEvent)}
         >

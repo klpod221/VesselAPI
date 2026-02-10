@@ -54,7 +54,7 @@ const SheetTrigger = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttribu
 SheetTrigger.displayName = "SheetTrigger"
 
 const sheetVariants = cva(
-  "fixed z-50 gap-4 p-6 shadow-2xl transition ease-in-out duration-300 bg-background border-l border-border animate-in slide-in-from-right",
+  "fixed z-50 gap-4 p-6 transition ease-in-out duration-300 bg-background border-l border-border animate-in slide-in-from-right",
   {
     variants: {
       side: {

@@ -96,7 +96,7 @@ const TooltipContent = React.forwardRef<HTMLDivElement, TooltipContentProps>(
                 ref={ref}
                 role="tooltip"
                 className={cn(
-                    "absolute z-50 overflow-hidden rounded-[4px] border border-border bg-popover px-3 py-1.5 text-xs shadow-none animate-in fade-in-0 zoom-in-95 text-popover-foreground",
+                    "absolute z-50 overflow-hidden rounded-[4px] border border-border bg-popover px-3 py-1.5 text-xs animate-in fade-in-0 zoom-in-95 text-popover-foreground",
                     className
                 )}
                 style={{ top: "100%", marginTop: sideOffset, left: "50%", transform: "translateX(-50%)" }}

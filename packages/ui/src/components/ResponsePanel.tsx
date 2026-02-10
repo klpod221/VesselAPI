@@ -92,7 +92,7 @@ export function ResponsePanel() {
                     onClick={() => setViewMode('preview')}
                     className={cn(
                       "px-3 py-1 text-xs font-medium rounded-sm transition-all",
-                      viewMode === 'preview' ? "bg-primary/20 text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
+                      viewMode === 'preview' ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"
                     )}
                   >
                     Preview
@@ -102,7 +102,7 @@ export function ResponsePanel() {
                     onClick={() => setViewMode('source')}
                     className={cn(
                       "px-3 py-1 text-xs font-medium rounded-sm transition-all",
-                      viewMode === 'source' ? "bg-primary/20 text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
+                      viewMode === 'source' ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"
                     )}
                   >
                     Source

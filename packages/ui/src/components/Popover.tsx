@@ -79,7 +79,7 @@ const PopoverContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTM
       <div
         ref={ref}
         className={cn(
-          "absolute z-50 mt-2 w-72 rounded-lg border border-border bg-popover p-4 text-popover-foreground shadow-none outline-none animate-in fade-in-0 zoom-in-95",
+          "absolute z-50 mt-2 w-72 rounded-lg border border-border bg-popover p-4 text-popover-foreground outline-none animate-in fade-in-0 zoom-in-95",
           className
         )}
         style={{ top: "100%", ...style }}

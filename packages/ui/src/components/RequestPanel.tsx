@@ -75,7 +75,7 @@ export function RequestPanel() {
         <Button 
           onClick={handleSend} 
           disabled={isLoading || !activeRequest.url}
-          className="h-9 px-6 font-semibold shadow-none border border-primary/20 hover:border-primary/50"
+          className="h-9 px-6 font-semibold border border-primary/20 hover:border-primary/50"
         >
           {isLoading ? (
             <>
