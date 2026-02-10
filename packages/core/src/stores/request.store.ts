@@ -2,42 +2,35 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { ApiRequest, ApiResponse } from '../types/request';
 import type { NetworkClient, RequestConfig } from '@vessel/network';
+import { useCollectionStore } from './collection.store';
 
 interface RequestState {
-  // Current request being edited
+  /** Current request being edited */
   activeRequest: ApiRequest | null;
-  
-  // Last response received
+
+  /** Collection ID that the active request belongs to (null if standalone) */
+  activeRequestCollectionId: string | null;
+
+  /** Last response received */
   lastResponse: ApiResponse | null;
-  
-  // Loading state
+
+  /** Loading state */
   isLoading: boolean;
-  
-  // Error message
+
+  /** Error message */
   error: string | null;
-  
-  // Network client instance
+
+  /** Network client instance */
   networkClient: NetworkClient | null;
 }
 
 interface RequestActions {
-  // Set the network client
   setClient: (client: NetworkClient) => void;
-  
-  // Create a new empty request
   newRequest: () => void;
-  
-  // Update current request
   updateRequest: (updates: Partial<ApiRequest>) => void;
-  
-  // Execute the current request
   executeRequest: () => Promise<void>;
-  
-  // Clear the response
   clearResponse: () => void;
-  
-  // Set active request
-  setActiveRequest: (request: ApiRequest | null) => void;
+  setActiveRequest: (request: ApiRequest | null, collectionId?: string | null) => void;
 }
 
 type RequestStore = RequestState & RequestActions;
@@ -139,6 +132,7 @@ export const useRequestStore = create<RequestStore>()(
     (set, get) => ({
       // State
       activeRequest: null,
+      activeRequestCollectionId: null,
       lastResponse: null,
       isLoading: false,
       error: null,
@@ -150,13 +144,29 @@ export const useRequestStore = create<RequestStore>()(
       newRequest: () => set({ activeRequest: createEmptyRequest(), lastResponse: null, error: null }),
       
       updateRequest: (updates) =>
-        set((state) => ({
-          activeRequest: state.activeRequest
-            ? { ...state.activeRequest, ...updates, updatedAt: Date.now() }
-            : null,
-        })),
-      
-      setActiveRequest: (request) => set({ activeRequest: request, lastResponse: null, error: null }),
+        set((state) => {
+          if (!state.activeRequest) return {};
+          const updated = { ...state.activeRequest, ...updates, updatedAt: Date.now() };
+
+          // Sync back to collection store if the request belongs to a collection
+          if (state.activeRequestCollectionId) {
+            useCollectionStore.getState().updateRequestInCollection(
+              state.activeRequestCollectionId,
+              updated.id,
+              updates,
+            );
+          }
+
+          return { activeRequest: updated };
+        }),
+
+      setActiveRequest: (request, collectionId) =>
+        set({
+          activeRequest: request,
+          activeRequestCollectionId: collectionId ?? null,
+          lastResponse: null,
+          error: null,
+        }),
       
       clearResponse: () => set({ lastResponse: null, error: null }),
       
@@ -214,9 +224,35 @@ export const useRequestStore = create<RequestStore>()(
     }),
     {
       name: 'vessel-request',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => ({
+        getItem: async (name: string) => {
+          try {
+            const { getSQLiteKVStorage } = await import('./sqlite-storage');
+            return await getSQLiteKVStorage().getItem(name);
+          } catch {
+            return localStorage.getItem(name);
+          }
+        },
+        setItem: async (name: string, value: string) => {
+          try {
+            const { getSQLiteKVStorage } = await import('./sqlite-storage');
+            await getSQLiteKVStorage().setItem(name, value);
+          } catch {
+            localStorage.setItem(name, value);
+          }
+        },
+        removeItem: async (name: string) => {
+          try {
+            const { getSQLiteKVStorage } = await import('./sqlite-storage');
+            await getSQLiteKVStorage().removeItem(name);
+          } catch {
+            localStorage.removeItem(name);
+          }
+        },
+      })),
       partialize: (state) => ({
         activeRequest: state.activeRequest,
+        activeRequestCollectionId: state.activeRequestCollectionId,
       }),
     }
   )

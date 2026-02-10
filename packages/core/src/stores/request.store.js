@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { useCollectionStore } from './collection.store';
 const createEmptyRequest = () => ({
     id: crypto.randomUUID(),
     name: 'New Request',
@@ -82,6 +83,7 @@ const buildRequestConfig = (request) => {
 export const useRequestStore = create()(persist((set, get) => ({
     // State
     activeRequest: null,
+    activeRequestCollectionId: null,
     lastResponse: null,
     isLoading: false,
     error: null,
@@ -89,12 +91,22 @@ export const useRequestStore = create()(persist((set, get) => ({
     // Actions
     setClient: (client) => set({ networkClient: client }),
     newRequest: () => set({ activeRequest: createEmptyRequest(), lastResponse: null, error: null }),
-    updateRequest: (updates) => set((state) => ({
-        activeRequest: state.activeRequest
-            ? { ...state.activeRequest, ...updates, updatedAt: Date.now() }
-            : null,
-    })),
-    setActiveRequest: (request) => set({ activeRequest: request, lastResponse: null, error: null }),
+    updateRequest: (updates) => set((state) => {
+        if (!state.activeRequest)
+            return {};
+        const updated = { ...state.activeRequest, ...updates, updatedAt: Date.now() };
+        // Sync back to collection store if the request belongs to a collection
+        if (state.activeRequestCollectionId) {
+            useCollectionStore.getState().updateRequestInCollection(state.activeRequestCollectionId, updated.id, updates);
+        }
+        return { activeRequest: updated };
+    }),
+    setActiveRequest: (request, collectionId) => set({
+        activeRequest: request,
+        activeRequestCollectionId: collectionId ?? null,
+        lastResponse: null,
+        error: null,
+    }),
     clearResponse: () => set({ lastResponse: null, error: null }),
     executeRequest: async () => {
         const { activeRequest, networkClient } = get();
@@ -145,9 +157,38 @@ export const useRequestStore = create()(persist((set, get) => ({
     },
 }), {
     name: 'vessel-request',
-    storage: createJSONStorage(() => localStorage),
+    storage: createJSONStorage(() => ({
+        getItem: async (name) => {
+            try {
+                const { getSQLiteKVStorage } = await import('./sqlite-storage');
+                return await getSQLiteKVStorage().getItem(name);
+            }
+            catch {
+                return localStorage.getItem(name);
+            }
+        },
+        setItem: async (name, value) => {
+            try {
+                const { getSQLiteKVStorage } = await import('./sqlite-storage');
+                await getSQLiteKVStorage().setItem(name, value);
+            }
+            catch {
+                localStorage.setItem(name, value);
+            }
+        },
+        removeItem: async (name) => {
+            try {
+                const { getSQLiteKVStorage } = await import('./sqlite-storage');
+                await getSQLiteKVStorage().removeItem(name);
+            }
+            catch {
+                localStorage.removeItem(name);
+            }
+        },
+    })),
     partialize: (state) => ({
         activeRequest: state.activeRequest,
+        activeRequestCollectionId: state.activeRequestCollectionId,
     }),
 }));
 //# sourceMappingURL=request.store.js.map

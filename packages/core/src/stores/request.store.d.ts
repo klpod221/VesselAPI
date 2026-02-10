@@ -1,10 +1,17 @@
 import type { ApiRequest, ApiResponse } from '../types/request';
 import type { NetworkClient } from '@vessel/network';
 interface RequestState {
+    /** Current request being edited */
     activeRequest: ApiRequest | null;
+    /** Collection ID that the active request belongs to (null if standalone) */
+    activeRequestCollectionId: string | null;
+    /** Last response received */
     lastResponse: ApiResponse | null;
+    /** Loading state */
     isLoading: boolean;
+    /** Error message */
     error: string | null;
+    /** Network client instance */
     networkClient: NetworkClient | null;
 }
 interface RequestActions {
@@ -13,7 +20,7 @@ interface RequestActions {
     updateRequest: (updates: Partial<ApiRequest>) => void;
     executeRequest: () => Promise<void>;
     clearResponse: () => void;
-    setActiveRequest: (request: ApiRequest | null) => void;
+    setActiveRequest: (request: ApiRequest | null, collectionId?: string | null) => void;
 }
 type RequestStore = RequestState & RequestActions;
 export declare const useRequestStore: import("zustand").UseBoundStore<Omit<import("zustand").StoreApi<RequestStore>, "setState" | "persist"> & {

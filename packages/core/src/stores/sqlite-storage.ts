@@ -2,38 +2,44 @@ import type { StateStorage } from 'zustand/middleware';
 import { SQLiteAdapter } from '@vessel/storage';
 import type { Collection } from '../types/request';
 
+// --- Shared Singleton Adapter ---
+// Both collection and KV storage MUST share the same adapter instance.
+// Otherwise each maintains a separate in-memory SQLite database,
+// and whichever saves last to IndexedDB overwrites the other's data.
+
+let sharedAdapter: SQLiteAdapter | null = null;
+let adapterInitialized = false;
+let adapterInitPromise: Promise<void> | null = null;
+
+function getSharedAdapter(): SQLiteAdapter {
+  sharedAdapter ??= new SQLiteAdapter();
+  return sharedAdapter;
+}
+
+async function ensureAdapterInit(): Promise<SQLiteAdapter> { // NOSONAR — singleton pattern intentionally returns same instance
+  const adapter = getSharedAdapter();
+  if (adapterInitialized) return adapter;
+  adapterInitPromise ??= adapter.init().then(() => { adapterInitialized = true; });
+  await adapterInitPromise;
+  return adapter;
+}
+
+// --- Collection Storage (structured table) ---
+
 /**
- * Creates a Zustand-compatible StateStorage using SQLite.
- * This allows persist middleware to store collections in IndexedDB via sql.js.
+ * Creates a Zustand-compatible StateStorage that persists collections
+ * to the SQLite `collections` table via the shared adapter.
  */
-export function createSQLiteStorage(): StateStorage {
-  const adapter = new SQLiteAdapter();
-  let initialized = false;
-  let initPromise: Promise<void> | null = null;
-
-  const ensureInit = async () => {
-    if (initialized) return;
-    initPromise ??= adapter.init().then(() => {
-      initialized = true;
-    });
-    await initPromise;
-  };
-
+function createSQLiteStorage(): StateStorage {
   return {
     getItem: async (): Promise<string | null> => {
-      await ensureInit();
-      
       try {
+        const adapter = await ensureAdapterInit();
         const collections = await adapter.getAllCollections();
-        const state = {
-          state: {
-            collections,
-            activeCollectionId: null,
-            activeFolderId: null,
-          },
+        return JSON.stringify({
+          state: { collections, activeCollectionId: null, activeFolderId: null },
           version: 0,
-        };
-        return JSON.stringify(state);
+        });
       } catch (error) {
         console.error('[SQLiteStorage] getItem failed:', error);
         return null;
@@ -41,25 +47,23 @@ export function createSQLiteStorage(): StateStorage {
     },
 
     setItem: async (_name: string, value: string): Promise<void> => {
-      await ensureInit();
-      
       try {
+        const adapter = await ensureAdapterInit();
         const parsed = JSON.parse(value);
         const newCollections: Collection[] = parsed.state?.collections || [];
         const existingCollections = await adapter.getAllCollections();
-        
+
         const newIds = new Set(newCollections.map((c) => c.id));
-        
+
         // Delete removed collections
         for (const existing of existingCollections) {
           if (!newIds.has(existing.id)) {
             await adapter.deleteCollection(existing.id);
           }
         }
-        
+
         // Save all current collections
         for (const collection of newCollections) {
-          // Cast Collection to CollectionData - they are structurally compatible
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           await adapter.saveCollection(collection as any);
         }
@@ -69,9 +73,8 @@ export function createSQLiteStorage(): StateStorage {
     },
 
     removeItem: async (): Promise<void> => {
-      await ensureInit();
-      
       try {
+        const adapter = await ensureAdapterInit();
         const collections = await adapter.getAllCollections();
         for (const collection of collections) {
           await adapter.deleteCollection(collection.id);
@@ -83,15 +86,60 @@ export function createSQLiteStorage(): StateStorage {
   };
 }
 
-// Singleton instance
 let sqliteStorage: StateStorage | null = null;
 
 /**
- * Get the singleton SQLite storage instance for Zustand.
+ * Get the singleton SQLite collection storage instance.
  */
 export function getSQLiteStorage(): StateStorage {
-  if (!sqliteStorage) {
-    sqliteStorage = createSQLiteStorage();
-  }
+  sqliteStorage ??= createSQLiteStorage();
   return sqliteStorage;
+}
+
+// --- KV Storage (for request drafts, settings, etc.) ---
+
+/**
+ * Creates a Zustand-compatible StateStorage backed by the SQLite
+ * `key_value` table via the shared adapter.
+ */
+function createSQLiteKVStorage(): StateStorage {
+  return {
+    getItem: async (name: string): Promise<string | null> => {
+      try {
+        const adapter = await ensureAdapterInit();
+        return await adapter.getKV(name);
+      } catch (error) {
+        console.error('[SQLiteKVStorage] getItem failed:', error);
+        return null;
+      }
+    },
+
+    setItem: async (name: string, value: string): Promise<void> => {
+      try {
+        const adapter = await ensureAdapterInit();
+        await adapter.setKV(name, value);
+      } catch (error) {
+        console.error('[SQLiteKVStorage] setItem failed:', error);
+      }
+    },
+
+    removeItem: async (name: string): Promise<void> => {
+      try {
+        const adapter = await ensureAdapterInit();
+        await adapter.deleteKV(name);
+      } catch (error) {
+        console.error('[SQLiteKVStorage] removeItem failed:', error);
+      }
+    },
+  };
+}
+
+let sqliteKVStorage: StateStorage | null = null;
+
+/**
+ * Get the singleton SQLite KV storage instance.
+ */
+export function getSQLiteKVStorage(): StateStorage {
+  sqliteKVStorage ??= createSQLiteKVStorage();
+  return sqliteKVStorage;
 }

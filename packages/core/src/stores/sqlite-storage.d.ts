@@ -1,11 +1,10 @@
 import type { StateStorage } from 'zustand/middleware';
 /**
- * Creates a Zustand-compatible StateStorage using SQLite.
- * This allows persist middleware to store collections in IndexedDB via sql.js.
- */
-export declare function createSQLiteStorage(): StateStorage;
-/**
- * Get the singleton SQLite storage instance for Zustand.
+ * Get the singleton SQLite collection storage instance.
  */
 export declare function getSQLiteStorage(): StateStorage;
+/**
+ * Get the singleton SQLite KV storage instance.
+ */
+export declare function getSQLiteKVStorage(): StateStorage;
 //# sourceMappingURL=sqlite-storage.d.ts.map

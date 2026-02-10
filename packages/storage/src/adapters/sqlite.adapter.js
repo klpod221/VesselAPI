@@ -33,6 +33,13 @@ export class SQLiteAdapter {
         updated_at INTEGER NOT NULL
       )
     `);
+        this.db.run(`
+      CREATE TABLE IF NOT EXISTS key_value (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at INTEGER NOT NULL
+      )
+    `);
         this.initialized = true;
         await this.saveToIndexedDB();
     }
@@ -96,6 +103,42 @@ export class SQLiteAdapter {
     }
     async exportAllCollections() {
         return this.getAllCollections();
+    }
+    // --- Key-Value Store ---
+    /**
+     * Retrieve a raw string value by key.
+     * Returns `null` when the key does not exist.
+     */
+    async getKV(key) {
+        if (!this.db)
+            throw new Error('Database not initialized');
+        const stmt = this.db.prepare('SELECT value FROM key_value WHERE key = ?');
+        stmt.bind([key]);
+        if (stmt.step()) {
+            const raw = stmt.get()[0];
+            stmt.free();
+            return raw;
+        }
+        stmt.free();
+        return null;
+    }
+    /**
+     * Store a raw string value under the given key (upsert).
+     */
+    async setKV(key, value) {
+        if (!this.db)
+            throw new Error('Database not initialized');
+        this.db.run('INSERT OR REPLACE INTO key_value (key, value, updated_at) VALUES (?, ?, ?)', [key, value, Date.now()]);
+        await this.saveToIndexedDB();
+    }
+    /**
+     * Remove a key-value entry.
+     */
+    async deleteKV(key) {
+        if (!this.db)
+            throw new Error('Database not initialized');
+        this.db.run('DELETE FROM key_value WHERE key = ?', [key]);
+        await this.saveToIndexedDB();
     }
     async close() {
         if (this.db) {

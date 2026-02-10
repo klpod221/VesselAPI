@@ -37,8 +37,8 @@ export function App({ platform, title = 'Vessel API' }) {
         }
         init();
     }, [platform, title, setActiveRequest, setStoreClient]);
-    const handleRequestSelect = (request) => {
-        setActiveRequest(request);
+    const handleRequestSelect = (request, collectionId) => {
+        setActiveRequest(request, collectionId);
     };
     return (_jsxs("div", { className: "h-screen w-screen flex flex-col bg-background text-foreground overflow-hidden", children: [_jsxs("header", { className: "h-12 shrink-0 border-b border-border flex items-center px-4 justify-between bg-card select-none app-region-drag", children: [_jsxs("div", { className: "flex items-center gap-2", children: [_jsx("div", { className: "h-6 w-6 rounded bg-primary flex items-center justify-center", children: _jsx("span", { className: "font-bold text-primary-foreground text-xs", children: "V" }) }), _jsx("span", { className: "font-bold", children: title }), client && (_jsx("span", { className: "text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground", children: client.name }))] }), _jsx("span", { className: "text-xs text-muted-foreground", children: platform === 'tauri' ? 'Desktop' : 'Web' })] }), _jsxs("div", { className: "flex-1 flex overflow-hidden", children: [_jsx(CollectionSidebar, { className: "w-64 shrink-0", onRequestSelect: handleRequestSelect }), _jsx("div", { className: "flex-1 border-r border-border min-w-[300px]", children: _jsx(RequestPanel, {}) }), _jsx("div", { className: "flex-1 min-w-[300px]", children: _jsx(ResponsePanel, {}) })] })] }));
 }

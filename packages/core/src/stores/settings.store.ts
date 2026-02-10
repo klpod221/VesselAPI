@@ -73,7 +73,32 @@ export const useSettingsStore = create<SettingsStore>()(
     }),
     {
       name: 'vessel-settings',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => ({
+        getItem: async (name: string) => {
+          try {
+            const { getSQLiteKVStorage } = await import('./sqlite-storage');
+            return await getSQLiteKVStorage().getItem(name);
+          } catch {
+            return localStorage.getItem(name);
+          }
+        },
+        setItem: async (name: string, value: string) => {
+          try {
+            const { getSQLiteKVStorage } = await import('./sqlite-storage');
+            await getSQLiteKVStorage().setItem(name, value);
+          } catch {
+            localStorage.setItem(name, value);
+          }
+        },
+        removeItem: async (name: string) => {
+          try {
+            const { getSQLiteKVStorage } = await import('./sqlite-storage');
+            await getSQLiteKVStorage().removeItem(name);
+          } catch {
+            localStorage.removeItem(name);
+          }
+        },
+      })),
     }
   )
 );

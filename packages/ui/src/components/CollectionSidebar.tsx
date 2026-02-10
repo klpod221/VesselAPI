@@ -15,11 +15,12 @@ import {
 } from 'lucide-react';
 import {
   useCollectionStore,
+  useRequestStore,
   type Collection,
   type CollectionFolder,
   type ApiRequest,
 } from '@vessel/core';
-import { cn } from '../lib/utils';
+import { cn, getMethodColor } from '../lib/utils';
 import { Button } from './Button';
 import { ScrollArea } from './ScrollArea';
 import { Input } from './Input';
@@ -27,10 +28,9 @@ import { ConfirmDialog } from './ConfirmDialog';
 
 interface CollectionSidebarProps {
   readonly className?: string;
-  readonly onRequestSelect?: (request: ApiRequest) => void;
+  readonly onRequestSelect?: (request: ApiRequest, collectionId: string) => void;
 }
 
-// Type for delete confirmation state
 interface DeleteConfirmState {
   isOpen: boolean;
   type: 'collection' | 'folder' | 'request';
@@ -60,9 +60,12 @@ export function CollectionSidebar({ className, onRequestSelect }: CollectionSide
     addFolder,
     deleteFolder,
     addRequestToCollection,
+    updateRequestInCollection,
     deleteRequestFromCollection,
     setActiveCollection,
   } = useCollectionStore();
+
+  const activeRequestId = useRequestStore((s) => s.activeRequest?.id);
 
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -88,7 +91,6 @@ export function CollectionSidebar({ className, onRequestSelect }: CollectionSide
   }, []);
   const cancelEdit = useCallback(() => setEditingId(null), []);
 
-  // Collection handlers
   const handleNewCollection = useCallback(() => {
     const newCollection: Collection = {
       id: crypto.randomUUID(),
@@ -113,7 +115,13 @@ export function CollectionSidebar({ className, onRequestSelect }: CollectionSide
     setEditingId(null);
   }, [updateCollection]);
 
-  // Delete confirmation handlers
+  const handleRenameRequest = useCallback((collectionId: string, requestId: string, newName: string) => {
+    if (newName.trim()) {
+      updateRequestInCollection(collectionId, requestId, { name: newName.trim(), updatedAt: Date.now() });
+    }
+    setEditingId(null);
+  }, [updateRequestInCollection]);
+
   const openDeleteConfirm = useCallback((
     type: 'collection' | 'folder' | 'request',
     id: string,
@@ -179,10 +187,10 @@ export function CollectionSidebar({ className, onRequestSelect }: CollectionSide
       return next;
     });
     closeMenu();
-    onRequestSelect?.(newRequest);
+    onRequestSelect?.(newRequest, collectionId);
+    setEditingId(newRequest.id);
   }, [addRequestToCollection, closeMenu, onRequestSelect]);
 
-  // Close menu when clicking outside
   useEffect(() => {
     if (menuOpenId) {
       const handleClick = () => setMenuOpenId(null);
@@ -196,7 +204,6 @@ export function CollectionSidebar({ className, onRequestSelect }: CollectionSide
     setMenuOpenId((prev) => (prev === id ? null : id));
   }, []);
 
-  // Get delete dialog content based on type
   const getDeleteDialogContent = () => {
     const { type, name } = deleteConfirm;
     switch (type) {
@@ -219,6 +226,53 @@ export function CollectionSidebar({ className, onRequestSelect }: CollectionSide
   };
 
   const dialogContent = getDeleteDialogContent();
+
+  /**
+   * Renders requests for a given folder or collection context.
+   * Extracted to reduce nesting depth in the JSX tree.
+   */
+  const renderRequests = (requests: ApiRequest[], collectionId: string) =>
+    requests.map((req) => (
+      <RequestItem
+        key={req.id}
+        request={req}
+        isActive={activeRequestId === req.id}
+        isMenuOpen={menuOpenId === req.id}
+        isEditing={editingId === req.id}
+        onSelect={() => onRequestSelect?.(req, collectionId)}
+        onToggleMenu={(e) => toggleMenu(req.id, e)}
+        onStartEdit={() => startEdit(req.id)}
+        onFinishEdit={(name) => handleRenameRequest(collectionId, req.id, name)}
+        onCancelEdit={cancelEdit}
+        onDelete={() => openDeleteConfirm('request', req.id, collectionId, req.name)}
+      />
+    ));
+
+  /**
+   * Renders subfolder tree items. Extracted from the main render
+   * to keep nesting depth below the SonarQube 4-level threshold.
+   */
+  const renderSubFolders = (folders: CollectionFolder[], collectionId: string) =>
+    folders.map((subFolder) => (
+      <TreeItem
+        key={subFolder.id}
+        type="folder"
+        name={subFolder.name}
+        isExpanded={expandedIds.has(subFolder.id)}
+        isEditing={editingId === subFolder.id}
+        isMenuOpen={menuOpenId === subFolder.id}
+        onToggle={() => toggleExpand(subFolder.id)}
+        onToggleMenu={(e) => toggleMenu(subFolder.id, e)}
+        onStartEdit={() => startEdit(subFolder.id)}
+        onFinishEdit={() => cancelEdit()}
+        onCancelEdit={cancelEdit}
+        onDelete={() => openDeleteConfirm('folder', subFolder.id, collectionId, subFolder.name)}
+        onAddFolder={() => handleAddFolder(collectionId, subFolder.id)}
+        onAddRequest={() => handleAddRequest(collectionId, subFolder.id)}
+      >
+        {renderRequests(subFolder.requests, collectionId)}
+      </TreeItem>
+    ));
 
   return (
     <>
@@ -246,9 +300,7 @@ export function CollectionSidebar({ className, onRequestSelect }: CollectionSide
                 <TreeItem
                   key={collection.id}
                   type="collection"
-                  id={collection.id}
                   name={collection.name}
-                  collectionId={collection.id}
                   isExpanded={expandedIds.has(collection.id)}
                   isEditing={editingId === collection.id}
                   isMenuOpen={menuOpenId === collection.id}
@@ -266,9 +318,7 @@ export function CollectionSidebar({ className, onRequestSelect }: CollectionSide
                     <TreeItem
                       key={folder.id}
                       type="folder"
-                      id={folder.id}
                       name={folder.name}
-                      collectionId={collection.id}
                       isExpanded={expandedIds.has(folder.id)}
                       isEditing={editingId === folder.id}
                       isMenuOpen={menuOpenId === folder.id}
@@ -281,62 +331,12 @@ export function CollectionSidebar({ className, onRequestSelect }: CollectionSide
                       onAddFolder={() => handleAddFolder(collection.id, folder.id)}
                       onAddRequest={() => handleAddRequest(collection.id, folder.id)}
                     >
-                      {/* Nested folders */}
-                      {folder.folders.map((subFolder) => (
-                        <TreeItem
-                          key={subFolder.id}
-                          type="folder"
-                          id={subFolder.id}
-                          name={subFolder.name}
-                          collectionId={collection.id}
-                          isExpanded={expandedIds.has(subFolder.id)}
-                          isEditing={editingId === subFolder.id}
-                          isMenuOpen={menuOpenId === subFolder.id}
-                          onToggle={() => toggleExpand(subFolder.id)}
-                          onToggleMenu={(e) => toggleMenu(subFolder.id, e)}
-                          onStartEdit={() => startEdit(subFolder.id)}
-                          onFinishEdit={() => cancelEdit()}
-                          onCancelEdit={cancelEdit}
-                          onDelete={() => openDeleteConfirm('folder', subFolder.id, collection.id, subFolder.name)}
-                          onAddFolder={() => handleAddFolder(collection.id, subFolder.id)}
-                          onAddRequest={() => handleAddRequest(collection.id, subFolder.id)}
-                        >
-                          {subFolder.requests.map((req) => (
-                            <RequestItem
-                              key={req.id}
-                              request={req}
-                              isMenuOpen={menuOpenId === req.id}
-                              onSelect={() => onRequestSelect?.(req)}
-                              onToggleMenu={(e) => toggleMenu(req.id, e)}
-                              onDelete={() => openDeleteConfirm('request', req.id, collection.id, req.name)}
-                            />
-                          ))}
-                        </TreeItem>
-                      ))}
-                      {/* Requests in folder */}
-                      {folder.requests.map((req) => (
-                        <RequestItem
-                          key={req.id}
-                          request={req}
-                          isMenuOpen={menuOpenId === req.id}
-                          onSelect={() => onRequestSelect?.(req)}
-                          onToggleMenu={(e) => toggleMenu(req.id, e)}
-                          onDelete={() => openDeleteConfirm('request', req.id, collection.id, req.name)}
-                        />
-                      ))}
+                      {renderSubFolders(folder.folders, collection.id)}
+                      {renderRequests(folder.requests, collection.id)}
                     </TreeItem>
                   ))}
                   {/* Root requests */}
-                  {collection.requests.map((req) => (
-                    <RequestItem
-                      key={req.id}
-                      request={req}
-                      isMenuOpen={menuOpenId === req.id}
-                      onSelect={() => onRequestSelect?.(req)}
-                      onToggleMenu={(e) => toggleMenu(req.id, e)}
-                      onDelete={() => openDeleteConfirm('request', req.id, collection.id, req.name)}
-                    />
-                  ))}
+                  {renderRequests(collection.requests, collection.id)}
                   {collection.folders.length === 0 && collection.requests.length === 0 && (
                     <p className="text-xs text-muted-foreground px-2 py-1 ml-4">Empty collection</p>
                   )}
@@ -367,9 +367,7 @@ export function CollectionSidebar({ className, onRequestSelect }: CollectionSide
 
 interface TreeItemProps {
   readonly type: 'collection' | 'folder';
-  readonly id: string;
   readonly name: string;
-  readonly collectionId: string;
   readonly isExpanded: boolean;
   readonly isEditing: boolean;
   readonly isMenuOpen: boolean;
@@ -424,17 +422,16 @@ function TreeItem({
   };
 
   const isCollection = type === 'collection';
-  const IconComponent = isCollection ? Folder : isExpanded ? FolderOpen : Folder;
+  const FolderIcon = isExpanded ? FolderOpen : Folder;
+  const IconComponent = isCollection ? Folder : FolderIcon;
   const iconColor = isCollection ? 'text-primary' : 'text-muted-foreground';
 
   return (
     <div className="mb-0.5">
-      <div
-        role="button"
-        tabIndex={0}
-        className="flex items-center gap-1 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer group relative"
+      <button
+        type="button"
+        className="w-full flex items-center gap-1 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer group relative text-left"
         onClick={isEditing ? undefined : onToggle}
-        onKeyDown={(e) => e.key === 'Enter' && !isEditing && onToggle()}
       >
         <ChevronRight
           className={cn('h-4 w-4 text-muted-foreground transition-transform shrink-0', isExpanded && 'rotate-90')}
@@ -455,35 +452,39 @@ function TreeItem({
           <span className="text-sm truncate flex-1">{name}</span>
         )}
 
-        <button
+        <span
+          role="none"
           className="h-6 w-6 flex items-center justify-center rounded opacity-0 group-hover:opacity-100 hover:bg-muted"
           onClick={onToggleMenu}
         >
           <MoreHorizontal className="h-3.5 w-3.5" />
-        </button>
+        </span>
 
         {/* Dropdown Menu */}
         {isMenuOpen && (
           <div
+            role="menu"
+            tabIndex={-1}
             className="absolute right-0 top-full mt-1 z-50 bg-popover border border-border rounded-md shadow-lg py-1 min-w-[140px]"
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.key === 'Escape' && onToggleMenu(e as unknown as React.MouseEvent)}
           >
-            <button className="w-full px-3 py-1.5 text-sm text-left hover:bg-muted flex items-center gap-2" onClick={onAddRequest}>
+            <button type="button" className="w-full px-3 py-1.5 text-sm text-left hover:bg-muted flex items-center gap-2" onClick={onAddRequest}>
               <FilePlus className="h-4 w-4" /> Add Request
             </button>
-            <button className="w-full px-3 py-1.5 text-sm text-left hover:bg-muted flex items-center gap-2" onClick={onAddFolder}>
+            <button type="button" className="w-full px-3 py-1.5 text-sm text-left hover:bg-muted flex items-center gap-2" onClick={onAddFolder}>
               <FolderPlus className="h-4 w-4" /> Add Folder
             </button>
             <div className="border-t border-border my-1" />
-            <button className="w-full px-3 py-1.5 text-sm text-left hover:bg-muted flex items-center gap-2" onClick={onStartEdit}>
+            <button type="button" className="w-full px-3 py-1.5 text-sm text-left hover:bg-muted flex items-center gap-2" onClick={onStartEdit}>
               <Pencil className="h-4 w-4" /> Rename
             </button>
-            <button className="w-full px-3 py-1.5 text-sm text-left hover:bg-muted flex items-center gap-2 text-destructive" onClick={onDelete}>
+            <button type="button" className="w-full px-3 py-1.5 text-sm text-left hover:bg-muted flex items-center gap-2 text-destructive" onClick={onDelete}>
               <Trash2 className="h-4 w-4" /> Delete
             </button>
           </div>
         )}
-      </div>
+      </button>
 
       {/* Children */}
       {isExpanded && children && <div className="ml-4 border-l border-border/50 pl-2">{children}</div>}
@@ -495,52 +496,90 @@ function TreeItem({
 
 interface RequestItemProps {
   readonly request: ApiRequest;
+  readonly isActive: boolean;
   readonly isMenuOpen: boolean;
+  readonly isEditing: boolean;
   readonly onSelect: () => void;
   readonly onToggleMenu: (e: React.MouseEvent) => void;
+  readonly onStartEdit: () => void;
+  readonly onFinishEdit: (name: string) => void;
+  readonly onCancelEdit: () => void;
   readonly onDelete: () => void;
 }
 
-const METHOD_COLORS: Record<string, string> = {
-  GET: 'text-green-500',
-  POST: 'text-yellow-500',
-  PUT: 'text-blue-500',
-  PATCH: 'text-purple-500',
-  DELETE: 'text-red-500',
-};
+function RequestItem({
+  request, isActive, isMenuOpen, isEditing, onSelect, onToggleMenu, onStartEdit, onFinishEdit, onCancelEdit, onDelete,
+}: RequestItemProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
 
-function RequestItem({ request, isMenuOpen, onSelect, onToggleMenu, onDelete }: RequestItemProps) {
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      onFinishEdit((e.target as HTMLInputElement).value);
+    } else if (e.key === 'Escape') {
+      onCancelEdit();
+    }
+  };
+
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      className="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-muted/50 cursor-pointer group relative"
-      onClick={onSelect}
-      onKeyDown={(e) => e.key === 'Enter' && onSelect()}
+    <button
+      type="button"
+      className={cn(
+        'w-full flex items-center gap-2 px-2 py-1 rounded-md cursor-pointer group relative text-left',
+        isActive ? 'bg-muted text-foreground' : 'hover:bg-muted/50',
+      )}
+      onClick={() => !isEditing && onSelect()}
     >
       <FileJson className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-      <span className={cn('text-xs font-mono shrink-0', METHOD_COLORS[request.method] || 'text-foreground')}>
+      <span className={cn('text-xs font-mono shrink-0', getMethodColor(request.method))}>
         {request.method.substring(0, 3)}
       </span>
-      <span className="text-sm truncate flex-1">{request.name}</span>
 
-      <button
-        className="h-6 w-6 flex items-center justify-center rounded opacity-0 group-hover:opacity-100 hover:bg-muted"
-        onClick={onToggleMenu}
-      >
-        <MoreHorizontal className="h-3.5 w-3.5" />
-      </button>
+      {isEditing ? (
+        <Input
+          ref={inputRef}
+          defaultValue={request.name}
+          className="h-5 text-sm px-1 py-0 flex-1"
+          onBlur={(e) => onFinishEdit(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onClick={(e) => e.stopPropagation()}
+        />
+      ) : (
+        <span className="text-sm truncate flex-1">{request.name}</span>
+      )}
+
+      {!isEditing && (
+        <span
+          role="none"
+          className="h-6 w-6 flex items-center justify-center rounded opacity-0 group-hover:opacity-100 hover:bg-muted"
+          onClick={onToggleMenu}
+        >
+          <MoreHorizontal className="h-3.5 w-3.5" />
+        </span>
+      )}
 
       {isMenuOpen && (
         <div
-          className="absolute right-0 top-full mt-1 z-50 bg-popover border border-border rounded-md shadow-lg py-1 min-w-[100px]"
+          role="menu"
+          tabIndex={-1}
+          className="absolute right-0 top-full mt-1 z-50 bg-popover border border-border rounded-md shadow-lg py-1 min-w-[120px]"
           onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.key === 'Escape' && onToggleMenu(e as unknown as React.MouseEvent)}
         >
-          <button className="w-full px-3 py-1.5 text-sm text-left hover:bg-muted flex items-center gap-2 text-destructive" onClick={onDelete}>
+          <button type="button" className="w-full px-3 py-1.5 text-sm text-left hover:bg-muted flex items-center gap-2" onClick={onStartEdit}>
+            <Pencil className="h-4 w-4" /> Rename
+          </button>
+          <button type="button" className="w-full px-3 py-1.5 text-sm text-left hover:bg-muted flex items-center gap-2 text-destructive" onClick={onDelete}>
             <Trash2 className="h-4 w-4" /> Delete
           </button>
         </div>
       )}
-    </div>
+    </button>
   );
 }

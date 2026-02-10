@@ -1,7 +1,7 @@
 import { type ApiRequest } from '@vessel/core';
 interface CollectionSidebarProps {
     readonly className?: string;
-    readonly onRequestSelect?: (request: ApiRequest) => void;
+    readonly onRequestSelect?: (request: ApiRequest, collectionId: string) => void;
 }
 /**
  * Sidebar component for managing API collections.

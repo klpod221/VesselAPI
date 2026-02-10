@@ -48,8 +48,8 @@ export function App({ platform, title = 'Vessel API' }: AppProps) {
     init();
   }, [platform, title, setActiveRequest, setStoreClient]);
 
-  const handleRequestSelect = (request: ApiRequest) => {
-    setActiveRequest(request);
+  const handleRequestSelect = (request: ApiRequest, collectionId: string) => {
+    setActiveRequest(request, collectionId);
   };
 
   return (

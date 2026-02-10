@@ -15,6 +15,19 @@ export declare class SQLiteAdapter implements StorageAdapter {
     deleteCollection(id: string): Promise<void>;
     importCollections(collections: CollectionData[]): Promise<void>;
     exportAllCollections(): Promise<CollectionData[]>;
+    /**
+     * Retrieve a raw string value by key.
+     * Returns `null` when the key does not exist.
+     */
+    getKV(key: string): Promise<string | null>;
+    /**
+     * Store a raw string value under the given key (upsert).
+     */
+    setKV(key: string, value: string): Promise<void>;
+    /**
+     * Remove a key-value entry.
+     */
+    deleteKV(key: string): Promise<void>;
     close(): Promise<void>;
     private rowToCollection;
     private loadFromIndexedDB;
