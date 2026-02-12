@@ -75,12 +75,12 @@ export function SettingsDialog() {
           <Settings className="h-5 w-5" />
       </DialogTrigger>
       <DialogContent className="max-w-2xl h-[80vh] flex flex-col p-0 gap-0">
-        <DialogHeader className="px-6 py-4 border-b border-border shrink-0">
+        <DialogHeader className="px-2 py-2 border-b border-border shrink-0">
           <DialogTitle>Settings</DialogTitle>
         </DialogHeader>
 
         <Tabs defaultValue="general" className="flex-1 flex flex-col overflow-hidden">
-          <div className="px-6 py-2 border-b border-border bg-muted/30 shrink-0">
+          <div className="px-2 py-2 border-b border-border bg-muted/30 shrink-0">
             <TabsList className="bg-transparent p-0 gap-2">
               <TabsTrigger value="general" className="data-[state=active]:bg-background">
                 <Monitor className="h-4 w-4 mr-2" /> General
@@ -94,10 +94,10 @@ export function SettingsDialog() {
             </TabsList>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex-1 overflow-y-auto p-2">
             {/* General Settings */}
-            <TabsContent value="general" className="space-y-6 mt-0">
-              <div className="space-y-4">
+            <TabsContent value="general" className="space-y-2 mt-0">
+              <div className="space-y-2">
                 <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Appearance</h3>
                 
                 <div className="grid gap-2">
@@ -106,31 +106,31 @@ export function SettingsDialog() {
                     <button
                       type="button"
                       onClick={() => setTheme('light')}
-                      className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground ${
+                      className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground ${
                         theme === 'light' ? 'border-primary' : ''
                       }`}
                     >
-                      <Sun className="mb-3 h-6 w-6" />
+                      <Sun className="mb-3 h-4 w-4" />
                       <span className="text-xs">Light</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setTheme('dark')}
-                      className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground ${
+                      className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground ${
                         theme === 'dark' ? 'border-primary' : ''
                       }`}
                     >
-                      <Moon className="mb-3 h-6 w-6" />
+                      <Moon className="mb-3 h-4 w-4" />
                       <span className="text-xs">Dark</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setTheme('system')}
-                      className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground ${
+                      className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground ${
                         theme === 'system' ? 'border-primary' : ''
                       }`}
                     >
-                      <Monitor className="mb-3 h-6 w-6" />
+                      <Monitor className="mb-3 h-4 w-4" />
                       <span className="text-xs">System</span>
                     </button>
                   </div>
@@ -139,7 +139,7 @@ export function SettingsDialog() {
 
               <Separator />
 
-              <div className="space-y-4">
+              <div className="space-y-2">
                 <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Application</h3>
                 
                 <div className="flex items-center justify-between">
@@ -153,8 +153,8 @@ export function SettingsDialog() {
             </TabsContent>
 
             {/* Editor Settings */}
-            <TabsContent value="editor" className="space-y-6 mt-0">
-              <div className="space-y-4">
+            <TabsContent value="editor" className="space-y-2 mt-0">
+              <div className="space-y-2">
                 <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Display</h3>
                 
                 <div className="grid gap-2">
@@ -189,7 +189,7 @@ export function SettingsDialog() {
 
               <Separator />
 
-              <div className="space-y-4">
+              <div className="space-y-2">
                 <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Behavior</h3>
 
                 <div className="flex items-center justify-between">
@@ -203,8 +203,8 @@ export function SettingsDialog() {
             </TabsContent>
 
             {/* Network Settings */}
-            <TabsContent value="network" className="space-y-6 mt-0">
-               <div className="space-y-4">
+            <TabsContent value="network" className="space-y-2 mt-0">
+               <div className="space-y-2">
                 <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Client</h3>
                 
                 <div className="grid gap-2">
@@ -243,7 +243,7 @@ export function SettingsDialog() {
             </TabsContent>
           </div>
           
-          <div className="p-4 border-t border-border bg-muted/10 shrink-0 flex justify-end">
+          <div className="p-2 border-t border-border bg-muted/10 shrink-0 flex justify-end">
              <Button variant="outline" className="text-destructive hover:text-destructive" onClick={handleReset}>
                 Reset to Defaults
              </Button>

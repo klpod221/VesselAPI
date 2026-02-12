@@ -1,4 +1,4 @@
-import type { HttpMethod } from '@vessel/network';
+import type { HttpMethod } from "@vessel/network";
 
 /**
  * Key-value pair for headers, query params, etc.
@@ -15,7 +15,13 @@ export interface KeyValuePair {
  * Request body configuration.
  */
 export interface RequestBody {
-  type: 'none' | 'json' | 'text' | 'form-data' | 'x-www-form-urlencoded' | 'binary';
+  type:
+    | "none"
+    | "json"
+    | "text"
+    | "form-data"
+    | "x-www-form-urlencoded"
+    | "binary";
   content: string;
   formData?: KeyValuePair[];
 }
@@ -24,13 +30,13 @@ export interface RequestBody {
  * Authentication configuration.
  */
 export interface AuthConfig {
-  type: 'none' | 'bearer' | 'basic' | 'api-key';
+  type: "none" | "bearer" | "basic" | "api-key";
   token?: string;
   username?: string;
   password?: string;
   apiKeyName?: string;
   apiKeyValue?: string;
-  apiKeyLocation?: 'header' | 'query';
+  apiKeyLocation?: "header" | "query";
 }
 
 /**
@@ -70,6 +76,8 @@ export interface Collection {
   requests: ApiRequest[];
   folders: CollectionFolder[];
   variables: KeyValuePair[];
+  isSynced?: boolean;
+  syncedAt?: number;
   createdAt: number;
   updatedAt: number;
 }

@@ -68,7 +68,7 @@ export function App({ platform, title = 'Vessel API' }: AppProps) {
   return (
     <div className="h-screen w-screen flex flex-col bg-background text-foreground overflow-hidden">
       {/* Header */}
-      <header className="h-12 shrink-0 border-b border-border flex items-center px-4 justify-between bg-card select-none app-region-drag">
+      <header className="h-12 shrink-0 border-b border-border flex items-center px-2 justify-between bg-card select-none app-region-drag">
         <div className="flex items-center gap-2">
           {/* Logo */}
           <Logo className="h-8 w-8 rounded" />

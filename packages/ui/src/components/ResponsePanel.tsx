@@ -13,7 +13,7 @@ export function ResponsePanel() {
 
   if (isLoading) {
     return (
-      <div className="flex h-full flex-col items-center justify-center text-muted-foreground gap-4">
+      <div className="flex h-full flex-col items-center justify-center text-muted-foreground gap-2">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         <p>Sending request...</p>
       </div>
@@ -22,7 +22,7 @@ export function ResponsePanel() {
 
   if (error) {
     return (
-      <div className="flex h-full flex-col items-center justify-center text-destructive p-4 gap-2 text-center">
+      <div className="flex h-full flex-col items-center justify-center text-destructive p-2 gap-2 text-center">
          <Wifi className="h-12 w-12 opacity-50" />
          <h3 className="font-semibold">Request Failed</h3>
          <p className="text-sm opacity-80">{error}</p>
@@ -32,7 +32,7 @@ export function ResponsePanel() {
 
   if (!lastResponse) {
     return (
-      <div className="flex h-full items-center justify-center text-muted-foreground p-4">
+      <div className="flex h-full items-center justify-center text-muted-foreground p-2">
         No response yet
       </div>
     );
@@ -53,12 +53,12 @@ export function ResponsePanel() {
   return (
     <div className="h-full flex flex-col bg-background">
       {/* Status Bar - Fixed Height */}
-      <div className="h-14 shrink-0 flex items-center gap-4 border-b border-border px-4 bg-card">
+      <div className="h-14 shrink-0 flex items-center gap-2 border-b border-border px-2 bg-card">
         <span className={cn("text-sm font-bold px-2.5 py-1 rounded bg-black/20 border border-white/5", getStatusColor(lastResponse.status))}>
           {lastResponse.status} {lastResponse.statusText}
         </span>
         
-        <div className="flex items-center gap-4 text-xs text-muted-foreground ml-auto">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground ml-auto">
           <div className="flex items-center gap-1.5 bg-muted/40 border border-white/5 px-2.5 py-1 rounded-sm">
             <Clock className="h-3.5 w-3.5" />
             {formatTime(lastResponse.timing.total)}
@@ -73,7 +73,7 @@ export function ResponsePanel() {
       {/* Tabs Section - Takes remaining height */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'body' | 'headers')} className="flex-1 min-h-0 flex flex-col">
         {/* Tab List - Fixed Height */}
-        <div className="shrink-0 border-b border-border px-4 bg-muted/20">
+        <div className="shrink-0 border-b border-border px-2 bg-muted/20">
           <TabsList>
             <TabsTrigger value="body">Body</TabsTrigger>
             <TabsTrigger value="headers">Headers</TabsTrigger>
@@ -112,7 +112,7 @@ export function ResponsePanel() {
             )}
 
             {/* Content Area - Scrollable */}
-            <div className="flex-1 min-h-0 p-4">
+            <div className="flex-1 min-h-0 p-2">
               {viewMode === 'preview' && isHtml ? (
                 <iframe 
                   srcDoc={lastResponse.body}
@@ -133,7 +133,7 @@ export function ResponsePanel() {
 
           <TabsContent value="headers" className="h-full">
             <ScrollArea className="h-full w-full">
-              <div className="p-4">
+              <div className="p-2">
                 <table className="w-full text-sm">
                   <tbody>
                     {Object.entries(lastResponse.headers).map(([key, value], index) => (

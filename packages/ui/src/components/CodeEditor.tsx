@@ -62,11 +62,35 @@ export function CodeEditor({
   placeholder,
   className,
 }: CodeEditorProps) {
-  const { wordWrap, lineNumbers, editorFontSize } = useSettingsStore();
+  const { wordWrap, lineNumbers, editorFontSize, formatOnPaste } = useSettingsStore();
+
+  const formatOnPasteExtension = EditorView.domEventHandlers({
+    paste(event, view) {
+      if (!formatOnPaste || language !== 'json' || readOnly) return false;
+
+      const clipboardText = event.clipboardData?.getData('text/plain');
+      if (!clipboardText) return false;
+
+      try {
+        const formatted = JSON.stringify(JSON.parse(clipboardText), null, 2);
+        // Only intervene if formatting actually changed something
+        if (formatted === clipboardText) return false;
+
+        event.preventDefault();
+        view.dispatch(view.state.replaceSelection(formatted));
+        onChange?.(view.state.doc.toString());
+        return true;
+      } catch {
+        // Not valid JSON — let CodeMirror handle normal paste
+        return false;
+      }
+    },
+  });
 
   const extensions = [
     ...(language === 'json' ? [json()] : []),
     ...(wordWrap ? [EditorView.lineWrapping] : []),
+    formatOnPasteExtension,
   ];
 
   return (

@@ -20,5 +20,8 @@
         "@tauri-apps/api": "^2.10.1",
         "tsup": "^8.5.1",
         "typescript": "^5.9.3"
+    },
+    "dependencies": {
+        "axios": "^1.13.5"
     }
 }

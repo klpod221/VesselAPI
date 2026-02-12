@@ -61,26 +61,21 @@ const DialogContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTML
     return (
       <Portal>
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
+      <button
+        type="button"
         data-state={context.open ? "open" : "closed"}
         className={cn(
-            "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+            "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 w-full h-full border-0 cursor-default"
         )}
         onClick={() => {
             if (context?.onOpenChange) context.onOpenChange(false)
         }}
-        role="button"
-        tabIndex={-1} // Overlay usually shouldn't be tab-focusable itself, but acts as backdrop
-        onKeyDown={(e) => {
-            if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
-                if (context?.onOpenChange) context.onOpenChange(false)
-            }
-        }}
+        tabIndex={-1} 
       />     {/* Content */}
            <div
             ref={ref}
             className={cn(
-                "relative z-50 grid w-full max-w-lg gap-4 p-6 duration-200 sm:rounded-lg bg-background border border-border animate-in fade-in-0 zoom-in-95",
+                "relative z-50 grid w-full max-w-lg gap-2 p-2 duration-200 sm:rounded-lg bg-background border border-border animate-in fade-in-0 zoom-in-95",
                 className
             )}
             {...props}
@@ -89,7 +84,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTML
             <button
                 type="button"
                 onClick={() => context.onOpenChange(false)}
-                className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none bg-secondary/50 p-1"
+                className="absolute right-2 top-2 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none bg-secondary/50 p-1"
             >
                 <X className="h-4 w-4" />
                 <span className="sr-only">Close</span>
@@ -139,7 +134,9 @@ const DialogTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HT
         className
       )}
       {...props}
-    />
+    >
+        {props.children}
+    </h2>
   )
 )
 DialogTitle.displayName = "DialogTitle"

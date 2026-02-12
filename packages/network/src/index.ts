@@ -10,13 +10,22 @@ export type {
   NetworkResult,
   ClientCapabilities,
   NetworkClient,
-} from './types';
+} from "./types";
 
-// Clients
-export { TauriNetworkClient } from './clients/tauri.client';
-export { FetchNetworkClient } from './clients/fetch.client';
-export { ExtensionNetworkClient } from './clients/extension.client';
+// Network Clients (for executing API requests against external URLs)
+export { TauriNetworkClient } from "./clients/tauri.client";
+export { FetchNetworkClient } from "./clients/fetch.client";
+export { ExtensionNetworkClient } from "./clients/extension.client";
 
-// Factory
-export { createNetworkClient, detectClientMode } from './factory';
-export type { ClientMode } from './factory';
+// Network Client Factory
+export { createNetworkClient, detectClientMode } from "./factory";
+export type { ClientMode } from "./factory";
+
+// API Client (for communicating with VesselAPI backend)
+export {
+  ApiClient,
+  ApiError,
+  configureApiClient,
+  getApiClient,
+} from "./api-client";
+export type { ApiResponse } from "./api-client";

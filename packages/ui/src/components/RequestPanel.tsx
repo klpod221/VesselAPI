@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Trash2, Send } from 'lucide-react';
-import { useRequestStore, type KeyValuePair } from '@vessel/core';
+import { useRequestStore, useSettingsStore, type KeyValuePair } from '@vessel/core';
 import { CodeEditor } from './CodeEditor';
 import { Button } from './Button';
 import { Input } from './Input';
@@ -12,12 +12,27 @@ import { ScrollArea } from './ScrollArea';
 import { cn, getMethodColor } from '../lib/utils';
 
 export function RequestPanel() {
-  const { activeRequest, updateRequest, executeRequest, isLoading } = useRequestStore();
+  const { activeRequest, updateRequest, executeRequest, saveRequest, isLoading } = useRequestStore();
+  const { autoSave } = useSettingsStore();
   const [activeTab, setActiveTab] = useState<'params' | 'headers' | 'auth' | 'body'>('params');
+
+  // Ctrl+S / Cmd+S to manually save when autoSave is off
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        if (!autoSave) {
+          saveRequest();
+        }
+      }
+    };
+    globalThis.addEventListener('keydown', handleKeyDown);
+    return () => globalThis.removeEventListener('keydown', handleKeyDown);
+  }, [autoSave, saveRequest]);
 
   if (!activeRequest) {
     return (
-      <div className="flex h-full items-center justify-center text-muted-foreground p-4">
+      <div className="flex h-full items-center justify-center text-muted-foreground p-2">
         Select or create a request to get started
       </div>
     );
@@ -47,7 +62,7 @@ export function RequestPanel() {
   return (
     <div className="h-full flex flex-col bg-background">
 
-      <div className="h-14 shrink-0 flex items-center gap-2 px-4 border-b border-border bg-card">
+      <div className="h-14 shrink-0 flex items-center gap-2 px-2 border-b border-border bg-card">
         <div className="w-32">
           <Select
             value={activeRequest.method}
@@ -75,7 +90,7 @@ export function RequestPanel() {
         <Button 
           onClick={handleSend} 
           disabled={isLoading || !activeRequest.url}
-          className="h-9 px-6 font-semibold border border-primary/20 hover:border-primary/50"
+          className="h-9 px-2 font-semibold border border-primary/20 hover:border-primary/50"
         >
           {isLoading ? (
             <>
@@ -94,7 +109,7 @@ export function RequestPanel() {
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1 min-h-0 flex flex-col">
 
-        <div className="shrink-0 border-b border-border px-4 bg-muted/20">
+        <div className="shrink-0 border-b border-border px-2 bg-muted/20">
           <TabsList>
             <TabsTrigger value="params">Params</TabsTrigger>
             <TabsTrigger value="headers">Headers</TabsTrigger>
@@ -108,7 +123,7 @@ export function RequestPanel() {
 
           <TabsContent value="params" className="h-full">
             <ScrollArea className="h-full w-full">
-              <div className="p-4 space-y-4">
+              <div className="p-2 space-y-2">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-medium text-muted-foreground">Query Parameters</h3>
                   <Button variant="ghost" size="sm" onClick={() => addKeyValuePair('queryParams')} className="h-8">
@@ -153,7 +168,7 @@ export function RequestPanel() {
 
           <TabsContent value="headers" className="h-full">
             <ScrollArea className="h-full w-full">
-              <div className="p-4 space-y-4">
+              <div className="p-2 space-y-2">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-medium text-muted-foreground">HTTP Headers</h3>
                   <Button variant="ghost" size="sm" onClick={() => addKeyValuePair('headers')} className="h-8">
@@ -198,7 +213,7 @@ export function RequestPanel() {
 
           <TabsContent value="auth" className="h-full">
             <ScrollArea className="h-full w-full">
-              <div className="p-4 space-y-6 max-w-lg">
+              <div className="p-2 space-y-2 max-w-lg">
                 <div className="space-y-2">
                   <Label htmlFor="auth-type">Authentication Type</Label>
                   <Select
@@ -226,7 +241,7 @@ export function RequestPanel() {
                   </div>
                 )}
                 {activeRequest.auth.type === 'basic' && (
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-2">
                     <div className="space-y-2">
                       <Label htmlFor="auth-username">Username</Label>
                       <Input
@@ -254,7 +269,7 @@ export function RequestPanel() {
 
           <TabsContent value="body" className="h-full flex flex-col">
 
-            <div className="shrink-0 flex items-center gap-4 px-4 py-[11px] text-sm border-b border-border">
+            <div className="shrink-0 flex items-center gap-2 px-2 py-[11px] text-sm border-b border-border">
               <div className="flex items-center gap-2">
                 <input
                   id="body-none"
@@ -278,7 +293,7 @@ export function RequestPanel() {
             </div>
 
 
-            <div className="flex-1 min-h-0 p-4">
+            <div className="flex-1 min-h-0 p-2">
               {activeRequest.body.type === 'json' ? (
                 <CodeEditor
                   value={activeRequest.body.content}

@@ -11,7 +11,8 @@
     "dev:core": "pnpm --filter @vessel/core dev",
     "dev:network": "pnpm --filter @vessel/network dev",
     "dev:storage": "pnpm --filter @vessel/storage dev",
-    "dev": "pnpm --filter @vessel/desktop tauri dev & pnpm --filter @vessel/web dev & pnpm --filter @vessel/extension dev & pnpm --filter @vessel/ui dev & pnpm --filter @vessel/core dev & pnpm --filter @vessel/network dev & pnpm --filter @vessel/storage dev",
+    "dev:backend": "cd apps/backend && pnpm start:dev",
+    "dev": "pnpm --filter @vessel/desktop tauri dev & pnpm --filter @vessel/web dev & pnpm --filter @vessel/extension dev & pnpm --filter @vessel/ui dev & pnpm --filter @vessel/core dev & pnpm --filter @vessel/network dev & pnpm --filter @vessel/storage dev & pnpm dev:backend",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "clean": "turbo run clean && rm -rf node_modules"
